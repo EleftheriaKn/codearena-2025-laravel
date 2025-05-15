@@ -20,7 +20,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::factory(10)->create()->each(function ($user) {
-            $user->posts()->saveMany(Post::factory(rand(1, 5))->make());
+            $user->posts()->saveMany(Post::factory(rand(1, 5))->make()-> each(function ($post){
+                $post->published_at = now();
+                $post->promoted = fake()->boolean();
+            }));
         });
     }
 }

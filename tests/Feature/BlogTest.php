@@ -16,6 +16,10 @@ class BlogTest extends TestCase
      */
     public function testBlogPostsPageIsAccessible()
     {
+        $user = User::factory()->create();
+        $post = Post::factory()->create([
+            'user_id' => $user->id,
+        ]);
         $response = $this->get(route('posts'));
 
         $response->assertStatus(200);
@@ -29,12 +33,22 @@ class BlogTest extends TestCase
         $user = User::factory()->create();
         $post = Post::factory()->create([
             'user_id' => $user->id,
+            'published_at' => now(),
+        ]);
+
+        $unpublishedPost = Post::factory()->create([
+            'user_id' => $user->id,
+            'published_at' => null,
         ]);
 
         $response = $this->get(route('post', $post));
 
         $response->assertStatus(200)
             ->assertSee($post->title);
+
+        $response = $this->get(route('post', $unpublishedPost));
+
+        $response->assertStatus(404);
     }
 
     /**
@@ -45,6 +59,7 @@ class BlogTest extends TestCase
         $user1 = User::factory()->create();
         $post1 = Post::factory()->create([
             'user_id' => $user1->id,
+            'published_at' => now(),
         ]);
 
         $user2 = User::factory()->create();
@@ -391,6 +406,15 @@ class BlogTest extends TestCase
      */
     public function testBlogPostsPageHasPagination()
     {
-        $this->markTestIncomplete();
+        $user = User::factory()->create();$user = User::factory()->create();
+        $posts = Post::factory(20)->create([
+            'user_id' => $user->id,
+            'published_at' => now(),
+        ]);;
+        $response = $this->get('/posts');
+        $response->assertStatus(200);
+        $posts = $response->viewData('posts');
+
+        $this->assertInstanceOf(\Illuminate\Contracts\Pagination\Paginator::class, $posts);
     }
 }
